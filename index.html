@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oxy HTML Fetcher</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PrismJS for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-full flex flex-col font-sans">
+
+    <!-- Umpan Jebakan AdBlocker (Hidden Element) -->
+    <div id="ad-banner-test" class="adsbox google-ad ad-placement sponsor-post" style="position: absolute; left: -9999px; top: -9999px; height: 10px; width: 10px;"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-6">
+        
+        <!-- Input Section -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <form id="fetchForm" class="flex flex-col md:flex-row gap-3">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                        <i class="fa-solid fa-globe"></i>
+                    </span>
+                    <input 
+                        type="text" 
+                        id="targetUrl" 
+                        required
+                        placeholder="Masukkan URL website..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        value="example.com"
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    id="btnSubmit"
+                    class="bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white px-6 py-3.5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    <i class="fa-solid fa-cloud-arrow-down" id="btnIcon"></i>
+                    <span id="btnText">Ambil HTML</span>
+                </button>
+            </form>
+
+            <!-- AdBlocker Detection Small UI -->
+            <div id="adblockWarning" class="hidden mt-3 flex items-center gap-2 text-rose-500 bg-rose-950/30 border border-rose-600/50 px-3 py-1.5 rounded-lg w-fit text-xs font-semibold tracking-wide">
+                <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
+                <span>AD-BLOCKER DETECT</span>
+            </div>
+
+            <!-- Opsi Bundle CSS/JS -->
+            <label for="bundleAssets" class="mt-3 flex items-center gap-2 text-xs text-slate-400 w-fit cursor-pointer select-none">
+                <input type="checkbox" id="bundleAssets" class="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500/40 focus:ring-2">
+                <span>Bundle CSS &amp; JS <span class="text-slate-600">(gabungkan semua file eksternal jadi 1 file HTML lengkap)</span></span>
+            </label>
+        </section>
+
+        <!-- Process Log Panel -->
+        <section id="logSection" class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <button type="button" onclick="toggleLogPanel()" class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/40 transition-all">
+                <span class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <i class="fa-solid fa-terminal text-indigo-400"></i>
+                    Log Proses
+                    <span id="logCountBadge" class="hidden bg-indigo-600/20 text-indigo-300 text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+                </span>
+                <i id="logChevron" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform"></i>
+            </button>
+            <div id="logBody" class="hidden border-t border-slate-800">
+                <div class="flex items-center justify-end gap-2 px-3 py-2 bg-slate-950/60 border-b border-slate-800/60">
+                    <button type="button" onclick="clearLog()" class="text-[11px] text-slate-500 hover:text-slate-300 flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Bersihkan
+                    </button>
+                </div>
+                <div id="logOutput" class="bg-slate-950 max-h-64 overflow-y-auto px-4 py-3 font-mono text-[11px] leading-relaxed">
+                    <p class="text-slate-600 italic">Belum ada proses. Log akan muncul di sini saat kamu klik "Ambil HTML".</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Output Section -->
+        <section id="outputSection" class="hidden flex-1 flex flex-col min-h-[500px] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <!-- Tabs & Action Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-800 bg-slate-900/80 p-3 gap-3">
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800/80 self-start">
+                    <button 
+                        id="tabCodeBtn"
+                        onclick="switchTab('code')"
+                        class="px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all bg-indigo-600 text-white"
+                    >
+                        <i class="fa-solid fa-code"></i> Source Code
+                    </button>
+                    <button 
+                        id="tabPreviewBtn"
+                        onclick="switchTab('preview')"
+                        class="px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200"
+                    >
+                        <i class="fa-solid fa-eye"></i> Live Preview
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 self-end sm:self-auto">
+                    <div class="relative hidden sm:block" id="searchContainer">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Cari..." 
+                            class="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                        >
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-xs text-slate-500"></i>
+                    </div>
+
+                    <button 
+                        onclick="copyToClipboard()"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
+                    >
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                    <button 
+                        onclick="downloadHtml()"
+                        class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
+                    >
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+
+            <!-- Display Area -->
+            <div class="flex-1 relative bg-slate-900">
+                <div id="tabCode" class="absolute inset-0 overflow-auto">
+                    <pre class="min-h-full"><code id="codeBlock" class="language-html"></code></pre>
+                </div>
+
+                <div id="tabPreview" class="absolute inset-0 hidden bg-white">
+                    <iframe id="previewIframe" sandbox="allow-scripts allow-same-origin" class="w-full h-full border-none bg-white"></iframe>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                <span id="charCount">Ukuran: 0 karakter</span>
+                <span id="statusIndicator" class="flex items-center gap-1.5 text-emerald-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Ready
+                </span>
+            </div>
+        </section>
+
+        <!-- Welcome Placeholder -->
+        <section id="welcomePlaceholder" class="flex-1 min-h-[350px] border border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-6">
+            <div class="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-800 mb-4 shadow-inner">
+                <i class="fa-solid fa-globe text-2xl text-slate-500"></i>
+            </div>
+            <h3 class="text-base font-semibold text-slate-300">Blom Ada Website yg Dimuat</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Masukkan link URL di atas lalu klik tombol "Ambil HTML" buat ngebongkar strukturnya.</p>
+        </section>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 z-50">
+        <div id="toastIcon" class="w-8 h-8 rounded-lg flex items-center justify-center text-white"></div>
+        <div class="text-xs">
+            <p id="toastTitle" class="font-bold text-slate-200"></p>
+            <p id="toastDesc" class="text-slate-400"></p>
+        </div>
+    </div>
+
+    <!-- PrismJS Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>
