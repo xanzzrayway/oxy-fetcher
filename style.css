@@ -1,0 +1,371 @@
+/* ============================================================
+   Oxy HTML Fetcher — motion system
+   Tema: "radar / scan" — tiap animasi mewakili proses scanning
+   dan streaming data dari web, bukan hiasan lepas.
+   ============================================================ */
+
+:root {
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    position: relative;
+}
+
+/* ---------- Ambient background: drifting signal blobs ---------- */
+.ambient-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.ambient-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.16;
+    will-change: transform;
+}
+.ambient-blob.b1 {
+    width: 480px; height: 480px;
+    top: -160px; left: -120px;
+    background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+    animation: driftA 26s ease-in-out infinite;
+}
+.ambient-blob.b2 {
+    width: 420px; height: 420px;
+    bottom: -140px; right: -100px;
+    background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+    animation: driftB 32s ease-in-out infinite;
+}
+.ambient-blob.b3 {
+    width: 320px; height: 320px;
+    top: 40%; left: 60%;
+    background: radial-gradient(circle, #818cf8 0%, transparent 70%);
+    animation: driftC 22s ease-in-out infinite;
+}
+@keyframes driftA {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(60px, 80px) scale(1.15); }
+}
+@keyframes driftB {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-70px, -50px) scale(1.1); }
+}
+@keyframes driftC {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-40px, 60px) scale(0.9); }
+}
+
+main, header, footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Entrance: staggered reveal on load ---------- */
+.reveal {
+    opacity: 0;
+    animation: fadeSlideUp 0.7s var(--ease-out) forwards;
+}
+.reveal-1 { animation-delay: 0.05s; }
+.reveal-2 { animation-delay: 0.14s; }
+.reveal-3 { animation-delay: 0.23s; }
+.reveal-4 { animation-delay: 0.32s; }
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Input focus: pulse ring like a scan ping ---------- */
+#targetUrl {
+    transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), transform 0.15s var(--ease-out);
+}
+#targetUrl:focus {
+    animation: focusPing 0.6s var(--ease-out);
+}
+@keyframes focusPing {
+    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.45); }
+    100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+}
+
+/* ---------- Submit button ---------- */
+#btnSubmit {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s var(--ease-spring), box-shadow 0.25s var(--ease-out), background-color 0.2s;
+}
+#btnSubmit:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px -8px rgba(79, 70, 229, 0.55);
+}
+#btnSubmit:not(:disabled):active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* Scan sweep — plays across the button while a fetch is in flight */
+#btnSubmit .scan-sweep {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+}
+#btnSubmit.is-scanning .scan-sweep {
+    opacity: 1;
+    animation: sweep 1.3s linear infinite;
+}
+@keyframes sweep {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(120%); }
+}
+
+#btnIcon.fa-spin-smooth {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    transform-origin: 50% 50%;
+    animation: spinSmooth 0.9s linear infinite;
+}
+@keyframes spinSmooth {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- AdBlock warning: alert-in ---------- */
+#adblockWarning:not(.hidden) {
+    animation: alertIn 0.45s var(--ease-spring);
+}
+@keyframes alertIn {
+    0% { opacity: 0; transform: translateX(-8px) scale(0.95); }
+    60% { opacity: 1; transform: translateX(2px) scale(1.02); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ---------- Log panel ---------- */
+#logChevron {
+    transition: transform 0.3s var(--ease-out);
+}
+#logBody {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.35s var(--ease-out), opacity 0.25s var(--ease-out);
+}
+#logBody.log-open {
+    max-height: 320px;
+    opacity: 1;
+}
+.log-line {
+    animation: logSlideIn 0.35s var(--ease-out) both;
+}
+@keyframes logSlideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+#logCountBadge {
+    transition: transform 0.2s var(--ease-spring);
+}
+#logCountBadge.bump {
+    animation: badgeBump 0.35s var(--ease-spring);
+}
+@keyframes badgeBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Output section reveal ---------- */
+#outputSection.section-in {
+    animation: sectionReveal 0.55s var(--ease-out);
+}
+@keyframes sectionReveal {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* File menu dropdown */
+#fileMenu {
+    animation: menuPop 0.18s var(--ease-out);
+    transform-origin: bottom right;
+}
+@keyframes menuPop {
+    from { opacity: 0; transform: scale(0.92) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+#fileMenuIcon.menu-open {
+    transform: rotate(180deg);
+}
+
+#previewArea {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s var(--ease-out), opacity 0.25s var(--ease-out);
+}
+#previewArea.preview-open {
+    max-height: 440px;
+    opacity: 1;
+}
+
+/* Code block: gentle reveal once content lands */
+#codeBlock.code-in {
+    animation: codeFadeIn 0.4s var(--ease-out);
+}
+@keyframes codeFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Action buttons: success pop feedback */
+.action-btn {
+    transition: transform 0.15s var(--ease-spring), background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.action-btn:hover { transform: translateY(-1px); }
+.action-btn:active { transform: translateY(0) scale(0.95); }
+.action-btn.success-pop {
+    animation: successPop 0.5s var(--ease-spring);
+}
+@keyframes successPop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Welcome placeholder: radar / signal search ---------- */
+#welcomePlaceholder .radar-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#welcomePlaceholder .radar-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 1px solid rgba(99, 102, 241, 0.5);
+    animation: radarPulse 2.6s var(--ease-out) infinite;
+}
+#welcomePlaceholder .radar-ring.r2 { animation-delay: 0.9s; }
+#welcomePlaceholder .radar-ring.r3 { animation-delay: 1.8s; }
+@keyframes radarPulse {
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+#welcomePlaceholder .globe-float {
+    animation: floatY 3.4s ease-in-out infinite;
+}
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* ---------- Toast: spring pop instead of a flat slide ---------- */
+#toast {
+    transition: transform 0.4s var(--ease-spring), opacity 0.3s var(--ease-out) !important;
+}
+.toast-show {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+}
+.toast-hide {
+    transform: translateY(20px) !important;
+    opacity: 0 !important;
+}
+#toastIcon i {
+    animation: iconPop 0.4s var(--ease-spring) 0.05s both;
+}
+@keyframes iconPop {
+    0% { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ---------- Toggle switch (Bundle CSS/JS) ---------- */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+}
+.toggle-track {
+    width: 42px;
+    height: 24px;
+    background: #334155;
+    border-radius: 9999px;
+    position: relative;
+    transition: background-color 0.25s var(--ease-out);
+}
+.toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s var(--ease-spring);
+}
+.toggle-switch input:checked ~ .toggle-track {
+    background: #4f46e5;
+}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb {
+    transform: translateX(18px);
+    animation: thumbPop 0.3s var(--ease-spring);
+}
+.toggle-switch input:focus-visible ~ .toggle-track {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+.toggle-switch input:disabled ~ .toggle-track {
+    cursor: not-allowed;
+}
+@keyframes thumbPop {
+    0% { transform: translateX(18px) scale(0.85); }
+    60% { transform: translateX(18px) scale(1.12); }
+    100% { transform: translateX(18px) scale(1); }
+}
+/* ---------- Scrollbar (kept from original) ---------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+pre[class*="language-"] {
+    margin: 0 !important;
+    border-radius: 0 0 0.75rem 0.75rem !important;
+    background: #1e293b !important;
+}
+
+mark {
+    animation: markIn 0.25s var(--ease-out);
+}
+@keyframes markIn {
+    from { background-color: rgba(234, 179, 8, 0.7); }
+    to { background-color: rgba(234, 179, 8, 0.3); }
+}
