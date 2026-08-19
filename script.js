@@ -12,7 +12,7 @@ let fetchedRawHtml = '';
         const bundleAssetsCheckbox = document.getElementById('bundleAssets');
         const bundleLabel = document.getElementById('bundleLabel');
         bundleAssetsCheckbox.addEventListener('change', () => {
-            bundleLabel.classList.toggle('text-indigo-400', bundleAssetsCheckbox.checked);
+            bundleLabel.classList.toggle('text-blue-400', bundleAssetsCheckbox.checked);
             bundleLabel.classList.toggle('text-slate-200', !bundleAssetsCheckbox.checked);
             syncSubOptionState();
         });
@@ -34,7 +34,7 @@ let fetchedRawHtml = '';
 
         SUB_OPTIONS.forEach(opt => {
             opt.checkbox.addEventListener('change', () => {
-                opt.label.classList.toggle('text-indigo-400', opt.checkbox.checked);
+                opt.label.classList.toggle('text-blue-400', opt.checkbox.checked);
                 opt.label.classList.toggle('text-slate-200', !opt.checkbox.checked);
             });
         });
@@ -60,7 +60,7 @@ let fetchedRawHtml = '';
             success: { icon: 'fa-solid fa-circle-check',       color: 'text-emerald-400' },
             warn:    { icon: 'fa-solid fa-triangle-exclamation',color: 'text-amber-400' },
             error:   { icon: 'fa-solid fa-circle-xmark',       color: 'text-rose-400' },
-            step:    { icon: 'fa-solid fa-angle-right',        color: 'text-indigo-400' }
+            step:    { icon: 'fa-solid fa-angle-right',        color: 'text-blue-400' }
         };
 
         function addLog(type, message) {
@@ -580,7 +580,7 @@ let fetchedRawHtml = '';
                 <div class="history-card bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden" data-id="${item.id}">
                     <div class="flex items-center justify-between p-3 gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                            <div class="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
                                 <i class="fa-solid fa-file-code"></i>
                             </div>
                             <div class="min-w-0">
@@ -827,7 +827,7 @@ let fetchedRawHtml = '';
             const item = getHistoryItem(id);
             if (!item) return;
             navigator.clipboard.writeText(item.html).then(() => {
-                showToast('Disalin!', 'Kode HTML disalin.', 'bg-indigo-600', 'fa-regular fa-clipboard');
+                showToast('Disalin!', 'Kode HTML disalin.', 'bg-blue-600', 'fa-regular fa-clipboard');
             });
         }
 
@@ -860,3 +860,15 @@ let fetchedRawHtml = '';
         // ===== Init: muat riwayat yang udah tersimpan sebelumnya =====
         loadHistoryFromStorage();
         renderHistoryList();
+
+        // ===== Boot loader: border menjalar -> logo -> wordmark, lalu hilang =====
+        (function initAppLoader() {
+            const loader = document.getElementById('appLoader');
+            if (!loader) return;
+            const TOTAL_MS = 5100; // 2s border + 0.8s logo + ~2s brand + fade out
+            setTimeout(() => {
+                loader.classList.add('loader-done');
+                document.body.classList.remove('is-loading');
+                setTimeout(() => loader.remove(), 550);
+            }, TOTAL_MS);
+        })();

@@ -45,19 +45,19 @@ body {
 .ambient-blob.b1 {
     width: 480px; height: 480px;
     top: -160px; left: -120px;
-    background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+    background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
     animation: driftA 26s ease-in-out infinite;
 }
 .ambient-blob.b2 {
     width: 420px; height: 420px;
     bottom: -140px; right: -100px;
-    background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+    background: radial-gradient(circle, #2563eb 0%, transparent 70%);
     animation: driftB 32s ease-in-out infinite;
 }
 .ambient-blob.b3 {
     width: 320px; height: 320px;
     top: 40%; left: 60%;
-    background: radial-gradient(circle, #818cf8 0%, transparent 70%);
+    background: radial-gradient(circle, #60a5fa 0%, transparent 70%);
     animation: driftC 22s ease-in-out infinite;
 }
 @keyframes driftA {
@@ -101,8 +101,8 @@ main, header, footer {
     animation: focusPing 0.6s var(--ease-out);
 }
 @keyframes focusPing {
-    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.45); }
-    100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.45); }
+    100% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
 }
 
 /* ---------- Submit button ---------- */
@@ -113,7 +113,7 @@ main, header, footer {
 }
 #btnSubmit:not(:disabled):hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 28px -8px rgba(79, 70, 229, 0.55);
+    box-shadow: 0 10px 28px -8px rgba(37, 99, 235, 0.55);
 }
 #btnSubmit:not(:disabled):active {
     transform: translateY(0) scale(0.97);
@@ -261,7 +261,7 @@ main, header, footer {
     position: absolute;
     inset: 0;
     border-radius: 9999px;
-    border: 1px solid rgba(99, 102, 241, 0.5);
+    border: 1px solid rgba(59, 130, 246, 0.5);
     animation: radarPulse 2.6s var(--ease-out) infinite;
 }
 #welcomePlaceholder .radar-ring.r2 { animation-delay: 0.9s; }
@@ -323,14 +323,14 @@ main, header, footer {
     transition: transform 0.25s var(--ease-spring);
 }
 .toggle-switch input:checked ~ .toggle-track {
-    background: #4f46e5;
+    background: #2563eb;
 }
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb {
     transform: translateX(18px);
     animation: thumbPop 0.3s var(--ease-spring);
 }
 .toggle-switch input:focus-visible ~ .toggle-track {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
 .toggle-switch input:disabled ~ .toggle-track {
     cursor: not-allowed;
@@ -369,3 +369,369 @@ mark {
     from { background-color: rgba(234, 179, 8, 0.7); }
     to { background-color: rgba(234, 179, 8, 0.3); }
 }
+/* ============================================================
+   Dark-black theme override + logo + mobile performance tuning
+   ============================================================ */
+
+:root {
+    --bg-black: #060608;
+    --bg-black-soft: #0a0a0d;
+}
+
+html, body {
+    background: var(--bg-black);
+    background-color: var(--bg-black);
+}
+
+body {
+    min-height: 100vh;
+    transition: background-color 0.4s var(--ease-smooth);
+}
+
+/* Ambient blobs stay but dimmer/smaller on black bg so they read as glow, not haze */
+.ambient-blob { opacity: 0.14; }
+
+/* Cards get a hair of separation from pure-black bg */
+.bg-slate-900 { background-color: #0e0e13 !important; }
+.bg-slate-950 { background-color: #050506 !important; }
+.border-slate-800 { border-color: #1c1c22 !important; }
+
+/* ---------- Logo ---------- */
+.reveal-0 { animation-delay: 0s; }
+
+.app-logo {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.app-logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    border: 1.5px solid rgba(59, 130, 246, 0.16);
+    overflow: visible;
+    pointer-events: none;
+}
+/* A small bright dot that runs along the perimeter of the logo box,
+   tracing every side + corner instead of spinning around the center. */
+.app-logo-ring::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 50%;
+    background: #93c5fd;
+    box-shadow: 0 0 6px 2px rgba(96, 165, 250, 0.9), 0 0 14px 4px rgba(59, 130, 246, 0.5);
+    offset-path: border-box;
+    offset-rotate: 0deg;
+    animation: travelBorder 3.4s linear infinite;
+    will-change: offset-distance;
+}
+@keyframes travelBorder {
+    0% { offset-distance: 0%; }
+    100% { offset-distance: 100%; }
+}
+/* Fallback for browsers without offset-path support: gentle pulse instead of nothing */
+@supports not (offset-path: border-box) {
+    .app-logo-ring::before {
+        top: 50%;
+        left: 50%;
+        margin: -3.5px 0 0 -3.5px;
+        animation: logoPulseFallback 1.8s ease-in-out infinite;
+    }
+    @keyframes logoPulseFallback {
+        0%, 100% { opacity: 0.4; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+}
+.app-logo-core {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(155deg, #1a1a24, #0a0a0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #93c5fd;
+    font-size: 15px;
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.15), 0 6px 18px -6px rgba(99,102,241,0.55);
+    animation: logoGlow 3.2s ease-in-out infinite;
+}
+@keyframes logoGlow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(99,102,241,0.15), 0 6px 18px -6px rgba(99,102,241,0.45); }
+    50% { box-shadow: 0 0 0 1px rgba(99,102,241,0.3), 0 6px 26px -4px rgba(99,102,241,0.75); }
+}
+.app-logo-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    background: linear-gradient(90deg, #e2e8f0, #93c5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% auto;
+    animation: titleShine 4.5s ease-in-out infinite;
+}
+@keyframes titleShine {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+}
+.app-logo-accent { color: #60a5fa; -webkit-text-fill-color: #60a5fa; }
+.app-logo-sub {
+    font-size: 10px;
+    color: #52525b;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* ---------- Global smoothness ---------- */
+button, a, input, .toggle-switch, .action-btn {
+    -webkit-tap-highlight-color: transparent;
+}
+* {
+    scroll-behavior: smooth;
+}
+
+/* ---------- Mobile perf: lighter blur + fewer costly layers ---------- */
+@media (max-width: 640px) {
+    .ambient-blob {
+        filter: blur(50px);
+        opacity: 0.12;
+    }
+    .ambient-blob.b3 { display: none; }
+    .app-logo-ring::before { animation-duration: 4.2s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-logo-ring::before, .app-logo-core, .app-logo-title { animation: none !important; }
+}
+
+/* ============================================================
+   Fix: white block/flash while scrolling on mobile (rubber-band
+   overscroll bounce revealing the browser's default white canvas)
+   ============================================================ */
+html {
+    height: 100%;
+    background-color: var(--bg-black) !important;
+    overscroll-behavior: none;
+    color-scheme: dark;
+}
+body {
+    min-height: 100%;
+    margin: 0;
+    background-color: var(--bg-black) !important;
+    overscroll-behavior: none;
+}
+/* Belt-and-suspenders: paint behind everything at the true document root,
+   sized to the full scrollable height (not just the viewport) so rubber-band
+   overscroll on iOS/Android never reveals the browser's default white canvas. */
+html::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-black);
+    z-index: -1;
+}
+body.is-loading {
+    overflow: hidden;
+    height: 100%;
+}
+
+/* ============================================================
+   Boot / preloader — "border menjalar" → logo → wordmark
+   Sequence: 0.0s-2.0s traveling border draws the frame
+             1.8s-2.6s logo flies in with a spring motion
+             2.6s-4.6s "OxyFetch" wordmark fades in blue
+             4.6s-5.1s whole loader fades out
+   ============================================================ */
+.app-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-black);
+    transition: opacity 0.5s var(--ease-smooth), visibility 0.5s;
+}
+.app-loader.loader-done {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-stage {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---- Phase 1: traveling border frame (comet crawling the perimeter,
+   same offset-path technique as the header logo — NOT a spin) ---- */
+.loader-frame {
+    position: absolute;
+    inset: 0;
+    border-radius: 26px;
+    opacity: 1;
+    animation: frameOut 0.4s var(--ease-out) forwards;
+    animation-delay: 2s;
+}
+.loader-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 26px;
+    border: 1.5px solid rgba(59, 130, 246, 0.14);
+}
+.loader-runner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: #93c5fd;
+    box-shadow: 0 0 8px 3px rgba(96, 165, 250, 0.9), 0 0 18px 6px rgba(59, 130, 246, 0.5);
+    offset-path: border-box;
+    offset-rotate: 0deg;
+    animation: runnerCrawl 1s linear 2, runnerOut 0.3s var(--ease-out) forwards;
+    animation-delay: 0s, 2s;
+    will-change: offset-distance;
+}
+.loader-runner::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(147,197,253,0.55), transparent 70%);
+}
+@keyframes runnerCrawl {
+    0% { offset-distance: 0%; }
+    100% { offset-distance: 100%; }
+}
+@keyframes runnerOut {
+    to { opacity: 0; }
+}
+/* Fallback for browsers without offset-path support */
+@supports not (offset-path: border-box) {
+    .loader-runner {
+        top: 50%;
+        left: 50%;
+        animation: logoPulseFallback 1s ease-in-out 2, runnerOut 0.3s var(--ease-out) forwards;
+        animation-delay: 0s, 2s;
+    }
+}
+@keyframes frameOut {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.85); }
+}
+
+/* ---- Phase 0: cloud icon, holds the center so the box isn't empty
+   while the border is still crawling ---- */
+.loader-cloud {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    font-size: 22px;
+    color: #60a5fa;
+    opacity: 0;
+    animation: cloudIn 0.4s var(--ease-out) forwards, cloudOut 0.35s var(--ease-out) forwards;
+    animation-delay: 0.1s, 1.7s;
+    filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.45));
+}
+@keyframes cloudIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.85); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cloudOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-6px) scale(0.85); }
+}
+
+/* ---- Phase 2: logo, cool down-then-right entrance ---- */
+.loader-logo {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: logoEnter 0.8s var(--ease-spring) forwards;
+    animation-delay: 1.8s;
+}
+@keyframes logoEnter {
+    0% {
+        opacity: 0;
+        transform: translate(-8px, -46px) scale(0.55) rotate(-18deg);
+    }
+    55% {
+        opacity: 1;
+        transform: translate(-8px, 4px) scale(1.06) rotate(4deg);
+    }
+    80% {
+        transform: translate(6px, -2px) scale(0.98) rotate(-2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+}
+.loader-logo .app-logo-core {
+    width: 46px;
+    height: 46px;
+    font-size: 17px;
+}
+
+/* ---- Phase 3: wordmark, blue fade-in ---- */
+.loader-brand {
+    position: absolute;
+    bottom: -34px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: brandIn 0.5s var(--ease-out) forwards;
+    animation-delay: 2.6s;
+}
+.loader-brand-text {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.loader-brand-white {
+    color: #e2e8f0;
+}
+.loader-brand-blue {
+    color: #3b82f6;
+    text-shadow: 0 0 18px rgba(59, 130, 246, 0.45);
+}
+@keyframes brandIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loader-runner { animation: none; opacity: 0; }
+    .loader-cloud { animation: none; opacity: 0; }
+    .loader-logo { animation: none; opacity: 1; }
+    .loader-brand { animation: none; opacity: 1; }
+}
+
